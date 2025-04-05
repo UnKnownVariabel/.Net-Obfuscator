@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("obfuscator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+767c2f6fb64347960f4fc02f1fe0672ccad203b8")]
 [assembly: System.Reflection.AssemblyProductAttribute("obfuscator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("obfuscator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

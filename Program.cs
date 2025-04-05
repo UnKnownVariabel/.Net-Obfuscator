@@ -1,17 +1,51 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+public static class GlobalSettings
+{
+    public static bool rename = false;
+    public static bool extraInstructions = false;
+}
+
 class Obfuscator
 {
     static void Main(string[] args)
     {
+        string inputAssembly = string.Empty;
         if (args.Length < 1)
         {
             Console.WriteLine("Usage: sudo dotnet run <inputAssembly>");
             return;
         }
 
-        string inputAssembly = args[0];
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("--"))
+            {
+                switch (args[i]) {
+                    case "--rename":
+                        GlobalSettings.rename = true;
+                        Console.WriteLine("Renaming enabled");
+                        break;
+                    case "--extra-instructions":
+                        GlobalSettings.extraInstructions = true;
+                        Console.WriteLine("Extra instructions enabled");
+                        break;
+                }
+                continue;
+            }
+            else
+            {
+                inputAssembly = args[i];
+                break;// Handle any flags here
+            }
+        }
+
+        if (inputAssembly == string.Empty)
+        {
+            Console.WriteLine("Please provide the path to the assembly to obfuscate.");
+            return;
+        }
         string outputAssembly = Path.Combine(Path.GetDirectoryName(inputAssembly)!,
             Path.GetFileNameWithoutExtension(inputAssembly) + ".Obfuscated" + Path.GetExtension(inputAssembly));
 
@@ -40,17 +74,21 @@ class Obfuscator
             foreach (var type in module.Types)
             {
                 // Rename types
-                type.Name = "Obf_" + Guid.NewGuid().ToString();
+                if( GlobalSettings.rename)
+                    type.Name = "Obf_" + Guid.NewGuid().ToString();
 
                 foreach (var method in type.Methods)
                 {
                     // Rename method
-                    method.Name = "Obf_" + Guid.NewGuid().ToString();
+                    if (GlobalSettings.rename)
+                        method.Name = "Obf_" + Guid.NewGuid().ToString();
 
                     // Example of adding an unnecessary NOP instruction
-                    var ilProcessor = method.Body.GetILProcessor();
-                    var firstInstruction = method.Body.Instructions[0];
-                    ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Nop));
+                    if (GlobalSettings.extraInstructions) {
+                        var ilProcessor = method.Body.GetILProcessor();
+                        var firstInstruction = method.Body.Instructions[0];
+                        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Nop));
+                    }
                 }
             }
         }
