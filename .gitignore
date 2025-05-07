@@ -1,0 +1,47 @@
+# Build artifacts
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio settings
+.vscode/
+*.vs/
+.vs/
+
+# Packages
+packages/
+*.nupkg
+# Optional: comment out if you use package restore 
+# and want to track packages
+# !packages/build/
+
+# NuGet restore
+project.lock.json
+project.assets.json
+
+# Environment/Secrets
+*.env
+App.config.user
+Secrets.json
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# ReSharper/Code Analysis
+_ReSharper*/
+*.DotSettings.user
