@@ -1,11 +1,14 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Obfuscator.Anti;
 
 public static class GlobalSettings
 {
     public static bool rename = false;
     public static bool extraInstructions = false;
     public static bool obfuscateStrings = true;
+    
+    public static bool antiDebugging = false;
 }
 
 namespace Obfuscator {
@@ -14,9 +17,10 @@ namespace Obfuscator {
         static void Main(string[] args)
         {
             string inputAssembly = string.Empty;
+            string suffix = string.Empty;
             if (args.Length < 1)
             {
-                Console.WriteLine("Usage: sudo dotnet run <inputAssembly>");
+                Console.WriteLine("Usage: sudo dotnet run <flags> <inputAssembly>");
                 return;
             }
 
@@ -36,14 +40,36 @@ namespace Obfuscator {
                         case "--obfuscate-strings":
                             GlobalSettings.obfuscateStrings = true;
                             Console.WriteLine("String obfuscation enabled");
-                        break;
+                            break;
+                        case "--antidebugging":
+                            GlobalSettings.antiDebugging = true;
+                            break;
+                        case "--input":
+                            if (i + 1 < args.Length)
+                            {
+                                inputAssembly = args[i + 1];
+                                i++;
+                            }
+                            break;
+                        case "--suffix":
+                            if (i + 1 < args.Length)
+                            {
+                                suffix = args[i + 1];
+                                i++;
+                            }
+                            break;
+
                     }
                     continue;
                 }
-                else
+                else if (args[i].EndsWith(".dll") || args[i].EndsWith(".exe"))
                 {
                     inputAssembly = args[i];
-                    break;// Handle any flags here
+                }
+                else
+                {
+                    Console.WriteLine("Unknown argument: " + args[i]);
+                    return;
                 }
             }
 
@@ -53,7 +79,10 @@ namespace Obfuscator {
                 return;
             }
             string outputAssembly = Path.Combine(Path.GetDirectoryName(inputAssembly)!,
-                Path.GetFileNameWithoutExtension(inputAssembly) + ".Obfuscated" + Path.GetExtension(inputAssembly));
+                Path.GetFileNameWithoutExtension(inputAssembly) + ".Obfuscated_" + suffix + Path.GetExtension(inputAssembly));
+
+            Console.WriteLine("Input assembly: " + inputAssembly);
+            Console.WriteLine("Output assembly: " + outputAssembly);
 
             Obfuscate(inputAssembly, outputAssembly);
 
@@ -119,6 +148,12 @@ namespace Obfuscator {
                                     ilProcessor.InsertAfter(instruction, ilProcessor.Create(OpCodes.Call, decodeMethod));
                                 }
                             }
+                        }
+
+                        if (GlobalSettings.antiDebugging)
+                        {
+                            // Add anti-debugging code here
+                            AntiDebugging.AddAntiDebug(method);
                         }
                     }
                 }
