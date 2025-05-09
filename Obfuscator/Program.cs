@@ -6,7 +6,7 @@ public static class GlobalSettings
 {
     public static bool rename = false;
     public static bool extraInstructions = false;
-    public static bool obfuscateStrings = true;
+    public static bool obfuscateStrings = false;
     public static bool flattenCode = false;
     public static bool antiDebugging = false;
 }
@@ -157,6 +157,10 @@ namespace Obfuscator {
                         {
                             // Add anti-debugging code here
                             AntiDebugging.AddAntiDebug(method);
+                        }
+                        if (GlobalSettings.flattenCode)
+                        {
+                            CodeFlattening.FlattenMethod(method);
                         }
                     }
                 }
