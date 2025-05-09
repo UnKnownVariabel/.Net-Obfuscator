@@ -23,7 +23,7 @@ namespace Obfuscator.Anti
                 PInvokeInfo = new PInvokeInfo(PInvokeAttributes.CharSetAnsi, "IsDebuggerPresent", new ModuleReference("kernel32.dll"))
             };
 
-            method.Module.Types[0].Methods.Add(isDebuggerPresent); // Add the method to the module's type
+            method.Module.Types[0].Methods.Add(isDebuggerPresent);
             method.Module.ImportReference(isDebuggerPresent);
 
             var exitMethod = method.Module.ImportReference(typeof(Environment).GetMethod("Exit", new[] { typeof(int) }));

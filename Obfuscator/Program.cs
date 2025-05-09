@@ -153,6 +153,7 @@ namespace Obfuscator {
                         if (GlobalSettings.antiDebugging)
                         {
                             // Add anti-debugging code here
+                            Console.WriteLine("Adding anti-debugging code");
                             AntiDebugging.AddAntiDebug(method);
                         }
                     }
@@ -187,12 +188,25 @@ namespace Obfuscator {
             decodeMethod.Parameters.Add(new ParameterDefinition("encodedString", ParameterAttributes.None, stringType));
 
             var ilProcessor = decodeMethod.Body.GetILProcessor();
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(encodingType.Resolve().Methods.First(m => m.Name == "get_UTF8"))));
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(typeof(Convert).GetMethod("FromBase64String"))));
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(encodingType.Resolve().Methods.First(m => m.Name == "GetString" && m.Parameters.Count == 1))));
+//            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
+//            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(encodingType.Resolve().Methods.First(m => m.Name == "get_UTF8"))));
+//            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
+//            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(typeof(Convert).GetMethod("FromBase64String"))));
+//            ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(encodingType.Resolve().Methods.First(m => m.Name == "GetString" && m.Parameters.Count == 1))));
+//            ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
+//
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0)); // load encoded base64 string
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
+                typeof(Convert).GetMethod("FromBase64String", new[] { typeof(string) })
+            ))); // returns byte[]
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
+                typeof(System.Text.Encoding).GetProperty("UTF8").GetGetMethod()
+            ))); // returns Encoding
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(
+                typeof(System.Text.Encoding).GetMethod("GetString", new[] { typeof(byte[]) })
+            ))); // returns string
             ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
+
 
             // Add the method to the module
             module.Types.First().Methods.Add(decodeMethod);
