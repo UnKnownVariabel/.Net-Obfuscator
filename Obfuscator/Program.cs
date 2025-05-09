@@ -6,8 +6,8 @@ public static class GlobalSettings
 {
     public static bool rename = false;
     public static bool extraInstructions = false;
-    public static bool obfuscateStrings = true;
-    
+    public static bool obfuscateStrings = false;
+    public static bool flattenCode = false;
     public static bool antiDebugging = false;
 }
 
@@ -40,7 +40,11 @@ namespace Obfuscator {
                         case "--obfuscate-strings":
                             GlobalSettings.obfuscateStrings = true;
                             Console.WriteLine("String obfuscation enabled");
-                            break;
+                        break;
+                        case "--flatten-code":
+                            GlobalSettings.flattenCode = true;
+                            Console.WriteLine("Code flattening enabled");
+                                break;
                         case "--antidebugging":
                             GlobalSettings.antiDebugging = true;
                             break;
@@ -58,7 +62,6 @@ namespace Obfuscator {
                                 i++;
                             }
                             break;
-
                     }
                     continue;
                 }
@@ -155,6 +158,10 @@ namespace Obfuscator {
                             // Add anti-debugging code here
                             Console.WriteLine("Adding anti-debugging code");
                             AntiDebugging.AddAntiDebug(method);
+                        }
+                        if (GlobalSettings.flattenCode)
+                        {
+                            CodeFlattening.FlattenMethod(method);
                         }
                     }
                 }
