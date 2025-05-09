@@ -84,6 +84,7 @@ namespace Obfuscator {
             string outputAssembly = Path.Combine(Path.GetDirectoryName(inputAssembly)!,
                 Path.GetFileNameWithoutExtension(inputAssembly) + ".Obfuscated_" + suffix + Path.GetExtension(inputAssembly));
 
+            
             Console.WriteLine("Input assembly: " + inputAssembly);
             Console.WriteLine("Output assembly: " + outputAssembly);
 
@@ -108,6 +109,11 @@ namespace Obfuscator {
         {
             // Load the assembly
             var assembly = AssemblyDefinition.ReadAssembly(inputAssemblyPath);
+
+            // Change the assembly name
+            assembly.Name.Name = Path.GetFileNameWithoutExtension(outputAssemblyPath);
+            assembly.MainModule.Name = Path.GetFileName(outputAssemblyPath);
+
 
             foreach (var module in assembly.Modules)
             {
