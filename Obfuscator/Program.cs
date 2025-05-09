@@ -62,7 +62,6 @@ namespace Obfuscator {
                                 i++;
                             }
                             break;
-:
                     }
                     continue;
                 }
