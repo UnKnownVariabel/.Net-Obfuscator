@@ -117,17 +117,30 @@ namespace Obfuscator {
 
             foreach (var module in assembly.Modules)
             {
+                var entryPoint = module.EntryPoint;
                 foreach (var type in module.Types)
                 {
-                    // Rename types
-                    if (GlobalSettings.rename)
-                        type.Name = "Obf_" + Guid.NewGuid().ToString();
-
+                    bool isEntryPointType = entryPoint?.DeclaringType == type;
+                if (GlobalSettings.rename && !isEntryPointType)
+                {
+                    type.Name = "Obf_" + Guid.NewGuid().ToString();
+                }
                     foreach (var method in type.Methods)
                     {
                         // Rename method
-                        if (GlobalSettings.rename)
-                            method.Name = "Obf_" + Guid.NewGuid().ToString();
+                        if (GlobalSettings.rename) {
+                            // Check if the method is a constructor
+                            if (method.IsConstructor)
+                            {
+                                // Rename the constructor to match the new type name
+                                //method.Name = type.Name;
+                            }
+                            else if (method != entryPoint)
+                            {
+                                // Rename the method to a random name
+                                method.Name = "Obf_" + Guid.NewGuid().ToString();
+                            }
+                        }
 
                         // Example of adding an unnecessary NOP instruction
                         if (GlobalSettings.extraInstructions)
