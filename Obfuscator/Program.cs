@@ -8,6 +8,7 @@ public static class GlobalSettings
     public static bool extraInstructions = false;
     public static bool obfuscateStrings = false;
     public static bool flattenCode = false;
+    public static bool shuffel = false;
     public static bool antiDebugging = false;
 }
 
@@ -45,6 +46,10 @@ namespace Obfuscator {
                             GlobalSettings.flattenCode = true;
                             Console.WriteLine("Code flattening enabled");
                                 break;
+                        case "--shuffle":
+                            GlobalSettings.shuffel = true;
+                            Console.WriteLine("Shuffeling enabled");
+                            break;
                         case "--antidebugging":
                             GlobalSettings.antiDebugging = true;
                             Console.WriteLine("Anti-debugging enabled");
@@ -70,9 +75,11 @@ namespace Obfuscator {
                             Console.WriteLine("--extra-instructions: Add extra instructions");
                             Console.WriteLine("--obfuscate-strings: Obfuscate strings");
                             Console.WriteLine("--flatten-code: Flatten code");
+                            Console.WriteLine("--shuffle: Shuffle code");
                             Console.WriteLine("--antidebugging: Add anti-debugging code");
                             Console.WriteLine("--input <assembly>: Specify input assembly");
                             Console.WriteLine("--suffix <suffix>: Specify suffix for output assembly");
+                            Console.WriteLine("--help: Show this help message");
                             return;
                         default:
                             Console.WriteLine("Unknown flag: " + args[i]);
@@ -146,10 +153,6 @@ namespace Obfuscator {
                             // Add anti-debugging code here
                             AntiDebugging.AddAntiDebug(method);
                         }
-                        if (GlobalSettings.flattenCode)
-                        {
-                            CodeFlattening.FlattenMethod(method);
-                        }
                     }
                 }
             }
@@ -162,6 +165,12 @@ namespace Obfuscator {
             {
                 // Rename types and methods
                 Rename.RenameModule(assembly.MainModule);
+            }
+            if (GlobalSettings.flattenCode) {
+                CodeFlattening.FlattenModule(assembly.MainModule, GlobalSettings.shuffel);
+            }
+            else if (GlobalSettings.shuffel) {
+                Console.WriteLine("can't shuffle without flattening");
             }
 
             // Save the modified assembly

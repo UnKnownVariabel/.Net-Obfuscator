@@ -7,7 +7,27 @@ using System.Security.Cryptography;
 
 public static class CodeFlattening
 {
-    public static void FlattenMethod(MethodDefinition method, bool shuffle = true)
+    /// <summary>
+    /// Flattens the control flow of all suitable methods within the given module.
+    /// </summary>
+    /// <param name="module">The module to process.</param>
+    /// <param name="shuffle">True to shuffle the physical order of code blocks for obfuscation, false to keep them in logical order.</param>
+    public static void FlattenModule(ModuleDefinition module, bool shuffle = false)
+    {
+        if (module == null)
+        {
+            throw new ArgumentNullException(nameof(module));
+        }
+
+        foreach (var type in module.Types)
+        {
+            foreach (var method in type.Methods)
+            {
+                FlattenMethod(method, shuffle);
+            }
+        }
+    }
+    private static void FlattenMethod(MethodDefinition method, bool shuffle = true)
     {
         // Skip methods that are unsuitable for flattening
         if (method.IsConstructor || !method.HasBody || method.Body.Instructions.Count <= 1)
