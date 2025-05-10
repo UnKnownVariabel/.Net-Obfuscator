@@ -141,32 +141,9 @@ namespace Obfuscator {
                             ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Nop));
                         }
 
-                        // Obfuscate strings
-                        if (method.HasBody && GlobalSettings.obfuscateStrings)
-                        {
-                            var ilProcessor = method.Body.GetILProcessor();
-                            for (int i = 0; i < method.Body.Instructions.Count; i++)
-                            {
-                                var instruction = method.Body.Instructions[i];
-                                if (instruction.OpCode == OpCodes.Ldstr)
-                                {
-                                    string originalString = (string)instruction.Operand;
-                                    string encodedString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(originalString));
-
-                                    // Replace the string with the encoded version
-                                    instruction.Operand = encodedString;
-
-                                    // Insert a call to the decoding method
-                                    var decodeMethod = GetOrCreateDecodeMethod(module);
-                                    ilProcessor.InsertAfter(instruction, ilProcessor.Create(OpCodes.Call, decodeMethod));
-                                }
-                            }
-                        }
-
                         if (GlobalSettings.antiDebugging)
                         {
                             // Add anti-debugging code here
-                            Console.WriteLine("Adding anti-debugging code");
                             AntiDebugging.AddAntiDebug(method);
                         }
                         if (GlobalSettings.flattenCode)
@@ -175,6 +152,11 @@ namespace Obfuscator {
                         }
                     }
                 }
+            }
+            if (GlobalSettings.obfuscateStrings)
+            {
+                // Add the decode method to the module
+                ObfuscateStrings.ObfuscateStringModule(assembly.MainModule);
             }
             if (GlobalSettings.rename)
             {
@@ -186,56 +168,6 @@ namespace Obfuscator {
             assembly.Write(outputAssemblyPath);
         }
 
-        private static MethodDefinition GetOrCreateDecodeMethod(ModuleDefinition module)
-        {
-            // Check if the decode method already exists
-            var existingMethod = module.Types
-                .SelectMany(t => t.Methods)
-                .FirstOrDefault(m => m.Name == "DecodeString");
-
-            if (existingMethod != null)
-                return existingMethod;
-
-            // Create a new decode method
-            var decodeMethod = new MethodDefinition(
-                "DecodeString",
-                MethodAttributes.Public | MethodAttributes.Static,
-                module.ImportReference(typeof(string))
-            );
-
-            var stringType = module.ImportReference(typeof(string));
-            var byteArrayType = module.ImportReference(typeof(byte[]));
-            var encodingType = module.ImportReference(typeof(System.Text.Encoding));
-
-            decodeMethod.Parameters.Add(new ParameterDefinition("encodedString", ParameterAttributes.None, stringType));
-
-            var ilProcessor = decodeMethod.Body.GetILProcessor();
-//            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
-//            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(encodingType.Resolve().Methods.First(m => m.Name == "get_UTF8"))));
-//            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
-//            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(typeof(Convert).GetMethod("FromBase64String"))));
-//            ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(encodingType.Resolve().Methods.First(m => m.Name == "GetString" && m.Parameters.Count == 1))));
-//            ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
-//
-            
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
-                typeof(System.Text.Encoding).GetProperty("UTF8")!.GetGetMethod()
-            ))); // returns Encoding
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0)); // load encoded base64 string
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
-                typeof(Convert).GetMethod("FromBase64String", new[] { typeof(string) })
-            ))); // returns byte[]
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(
-                typeof(System.Text.Encoding).GetMethod("GetString", new[] { typeof(byte[]) })
-            ))); // returns string
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
-
-
-            // Add the method to the module
-            module.Types.First().Methods.Add(decodeMethod);
-
-            return decodeMethod;
-        }
     }
 // See https://aka.ms/new-console-template for more information
 // Console.WriteLine("Hello, World!");
