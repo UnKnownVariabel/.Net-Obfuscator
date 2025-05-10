@@ -132,7 +132,6 @@ namespace Obfuscator {
                 {
                     foreach (var method in type.Methods)
                     {
-
                         // Example of adding an unnecessary NOP instruction
                         if (GlobalSettings.extraInstructions)
                         {
