@@ -54,6 +54,15 @@ namespace Obfuscator {
                             GlobalSettings.antiDebugging = true;
                             Console.WriteLine("Anti-debugging enabled");
                             break;
+                        case "--all":
+                            GlobalSettings.rename = true;
+                            GlobalSettings.extraInstructions = true;
+                            GlobalSettings.obfuscateStrings = true;
+                            GlobalSettings.flattenCode = true;
+                            GlobalSettings.shuffel = true;
+                            GlobalSettings.antiDebugging = true;
+                            Console.WriteLine("All options enabled");
+                            break;
                         case "--input":
                             if (i + 1 < args.Length)
                             {
