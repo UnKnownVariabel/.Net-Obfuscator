@@ -146,12 +146,6 @@ namespace Obfuscator {
                             var firstInstruction = method.Body.Instructions[0];
                             ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Nop));
                         }
-
-                        if (GlobalSettings.antiDebugging)
-                        {
-                            // Add anti-debugging code here
-                            AntiDebugging.AddAntiDebug(method);
-                        }
                     }
                 }
             }
@@ -160,16 +154,21 @@ namespace Obfuscator {
                 // Add the decode method to the module
                 ObfuscateStrings.ObfuscateStringModule(assembly.MainModule);
             }
-            if (GlobalSettings.rename)
-            {
-                // Rename types and methods
-                Rename.RenameModule(assembly.MainModule);
-            }
             if (GlobalSettings.flattenCode) {
                 CodeFlattening.FlattenModule(assembly.MainModule, GlobalSettings.shuffel);
             }
             else if (GlobalSettings.shuffel) {
                 Console.WriteLine("can't shuffle without flattening");
+            }
+            if (GlobalSettings.antiDebugging)
+            {
+                // Add anti-debugging code
+                AntiDebugging.AntiDebugModule(assembly.MainModule);
+            }
+            if (GlobalSettings.rename)
+            {
+                // Rename types and methods
+                Rename.RenameModule(assembly.MainModule);
             }
 
             // Save the modified assembly
