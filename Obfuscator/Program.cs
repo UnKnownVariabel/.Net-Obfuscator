@@ -47,6 +47,7 @@ namespace Obfuscator {
                                 break;
                         case "--antidebugging":
                             GlobalSettings.antiDebugging = true;
+                            Console.WriteLine("Anti-debugging enabled");
                             break;
                         case "--input":
                             if (i + 1 < args.Length)
@@ -62,6 +63,21 @@ namespace Obfuscator {
                                 i++;
                             }
                             break;
+                        case "--help":
+                            Console.WriteLine("Usage: sudo dotnet run <flags> <inputAssembly>");
+                            Console.WriteLine("Flags:");
+                            Console.WriteLine("--rename: Rename methods and types");
+                            Console.WriteLine("--extra-instructions: Add extra instructions");
+                            Console.WriteLine("--obfuscate-strings: Obfuscate strings");
+                            Console.WriteLine("--flatten-code: Flatten code");
+                            Console.WriteLine("--antidebugging: Add anti-debugging code");
+                            Console.WriteLine("--input <assembly>: Specify input assembly");
+                            Console.WriteLine("--suffix <suffix>: Specify suffix for output assembly");
+                            return;
+                        default:
+                            Console.WriteLine("Unknown flag: " + args[i]);
+                            return;
+
                     }
                     continue;
                 }
@@ -84,19 +100,14 @@ namespace Obfuscator {
             string outputAssembly = Path.Combine(Path.GetDirectoryName(inputAssembly)!,
                 Path.GetFileNameWithoutExtension(inputAssembly) + ".Obfuscated_" + suffix + Path.GetExtension(inputAssembly));
 
-            
             Console.WriteLine("Input assembly: " + inputAssembly);
             Console.WriteLine("Output assembly: " + outputAssembly);
 
             Obfuscate(inputAssembly, outputAssembly);
 
-            Console.WriteLine("Obfuscation completed. Obfuscated assembly saved as: " + outputAssembly);
-            // Obfuscator.Obfuscation.EncodeArithmetic.EncodeArithmeticInstructions();
-            // var thing = new Obfuscator.Anti.AntiDebugging();
-
             // Copy runtime config if it exists
-             string runtimeConfig = Path.ChangeExtension(inputAssembly, ".runtimeconfig.json");
-             string outputRuntimeConfig = Path.ChangeExtension(outputAssembly, ".runtimeconfig.json");
+            string runtimeConfig = Path.ChangeExtension(inputAssembly, ".runtimeconfig.json");
+            string outputRuntimeConfig = Path.ChangeExtension(outputAssembly, ".runtimeconfig.json");
 
             if (File.Exists(runtimeConfig))
             {
@@ -117,30 +128,10 @@ namespace Obfuscator {
 
             foreach (var module in assembly.Modules)
             {
-                var entryPoint = module.EntryPoint;
                 foreach (var type in module.Types)
                 {
-                    bool isEntryPointType = entryPoint?.DeclaringType == type;
-                    if (GlobalSettings.rename && !isEntryPointType)
-                    {
-                        type.Name = "Obf_" + Guid.NewGuid().ToString();
-                    }
                     foreach (var method in type.Methods)
                     {
-                        // Rename method
-                        if (GlobalSettings.rename) {
-                            // Check if the method is a constructor
-                            if (method.IsConstructor)
-                            {
-                                // Rename the constructor to match the new type name
-                                //method.Name = type.Name;
-                            }
-                            else if (method != entryPoint)
-                            {
-                                // Rename the method to a random name
-                                method.Name = "Obf_" + Guid.NewGuid().ToString();
-                            }
-                        }
 
                         // Example of adding an unnecessary NOP instruction
                         if (GlobalSettings.extraInstructions)
@@ -184,6 +175,11 @@ namespace Obfuscator {
                         }
                     }
                 }
+            }
+            if (GlobalSettings.rename)
+            {
+                // Rename types and methods
+                Rename.RenameModule(assembly.MainModule);
             }
 
             // Save the modified assembly
