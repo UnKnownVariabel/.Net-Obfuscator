@@ -29,7 +29,7 @@ namespace Obfuscator.Anti
         {
             var ilProcessor = method.Body.GetILProcessor();
             var instructions = method.Body.Instructions;
-            var instruction = instructions[_random.Next(instructions.Count)];
+            var instruction = instructions[0];
             // var kernel32ref = new ModuleReference("kernel32.dll");
             // method.Module.ModuleReferences.Add(kernel32ref);
 
