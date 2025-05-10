@@ -7,7 +7,27 @@ using System.Security.Cryptography;
 
 public static class CodeFlattening
 {
-    public static void FlattenMethod(MethodDefinition method)
+    /// <summary>
+    /// Flattens the control flow of all suitable methods within the given module.
+    /// </summary>
+    /// <param name="module">The module to process.</param>
+    /// <param name="shuffle">True to shuffle the physical order of code blocks for obfuscation, false to keep them in logical order.</param>
+    public static void FlattenModule(ModuleDefinition module, bool shuffle = false)
+    {
+        if (module == null)
+        {
+            throw new ArgumentNullException(nameof(module));
+        }
+
+        foreach (var type in module.Types)
+        {
+            foreach (var method in type.Methods)
+            {
+                FlattenMethod(method, shuffle);
+            }
+        }
+    }
+    private static void FlattenMethod(MethodDefinition method, bool shuffle = true)
     {
         // Skip methods that are unsuitable for flattening
         if (method.IsConstructor || !method.HasBody || method.Body.Instructions.Count <= 1)
@@ -32,20 +52,26 @@ public static class CodeFlattening
         // Create instruction mapping for branch targets
         var oldToNewInstructions = new Dictionary<Instruction, Instruction>();
 
-        int state = 0;
+        //shuffel
+        Random rand = new Random();
+        IEnumerable<int> values = Enumerable.Range(0, blocks.Count);
+        values = shuffle ? values.OrderBy(_ => rand.Next()) : values;
+        Dictionary<int, int> order = values.Select((val, index) => new { index, val }).ToDictionary(x => x.index, x => x.val);
+
+
         var stateBlocks = new Dictionary<int, Instruction>();
 
         // Create state jump table
-        foreach (var block in blocks)
-        {
+        for(int i = 0; i < order.Count; i++) {
             Instruction jumpTarget = Instruction.Create(OpCodes.Nop);
-            stateBlocks[state++] = jumpTarget;
+            stateBlocks[i] = jumpTarget;
         }
 
 
         var loadState = Instruction.Create(OpCodes.Ldloc, stateVar);
         var switchInstr = Instruction.Create(OpCodes.Switch, stateBlocks.Values.ToArray());
-        newInstructions.Add(il.Create(OpCodes.Ldc_I4_0));
+        int startPos = order.FirstOrDefault(pair => pair.Value == 0).Key;
+        newInstructions.Add(il.Create(OpCodes.Ldc_I4, startPos));
         newInstructions.Add(il.Create(OpCodes.Stloc, stateVar));
         newInstructions.Add(il.Create(OpCodes.Br, loadState));
         
@@ -57,12 +83,9 @@ public static class CodeFlattening
 
         newInstructions.Add(il.Create(OpCodes.Br, loadState));
 
-        // Create state machine body
-        state = 0;
-
-        for (int i = 0; i < blocks.Count; i++)
+        for (int i = 0; i < order.Count; i++)
         {
-            var block = blocks[i];
+            var block = blocks[order[i]];
             var blockState = stateBlocks[i];
             newInstructions.Add(blockState);
             foreach (var instr in block)
@@ -79,10 +102,10 @@ public static class CodeFlattening
                         
                         
                         // Add instructions to set state and jump to switch
-                        Instruction setToTarget = Instruction.Create(OpCodes.Ldc_I4, targetIndex);
+                        Instruction setToTarget = Instruction.Create(OpCodes.Ldc_I4, order.FirstOrDefault(pair => pair.Value == targetIndex).Key);
                         instr.Operand = setToTarget;
                         newInstructions.Add(instr);
-                        newInstructions.Add(il.Create(OpCodes.Ldc_I4, i+1));
+                        newInstructions.Add(il.Create(OpCodes.Ldc_I4, order.FirstOrDefault(pair => pair.Value == order[i]+1).Key ));
                         newInstructions.Add(il.Create(OpCodes.Stloc, stateVar));
                         newInstructions.Add(il.Create(OpCodes.Br, loadState));
 
@@ -106,12 +129,10 @@ public static class CodeFlattening
 
             }
             // Add a branch to the next state
-            if (i < blocks.Count - 1)
-            {
-                newInstructions.Add(il.Create(OpCodes.Ldc_I4, i + 1));
-                newInstructions.Add(il.Create(OpCodes.Stloc, stateVar));
-                newInstructions.Add(il.Create(OpCodes.Br, loadState));
-            }
+            newInstructions.Add(il.Create(OpCodes.Ldc_I4, order.FirstOrDefault(pair => pair.Value == order[i]+1).Key));
+            newInstructions.Add(il.Create(OpCodes.Stloc, stateVar));
+            newInstructions.Add(il.Create(OpCodes.Br, loadState));
+
         }
 
         // Replace old instructions
