@@ -121,10 +121,10 @@ namespace Obfuscator {
                 foreach (var type in module.Types)
                 {
                     bool isEntryPointType = entryPoint?.DeclaringType == type;
-                if (GlobalSettings.rename && !isEntryPointType)
-                {
-                    type.Name = "Obf_" + Guid.NewGuid().ToString();
-                }
+                    if (GlobalSettings.rename && !isEntryPointType)
+                    {
+                        type.Name = "Obf_" + Guid.NewGuid().ToString();
+                    }
                     foreach (var method in type.Methods)
                     {
                         // Rename method
@@ -221,13 +221,14 @@ namespace Obfuscator {
 //            ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(encodingType.Resolve().Methods.First(m => m.Name == "GetString" && m.Parameters.Count == 1))));
 //            ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
 //
+            
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
+                typeof(System.Text.Encoding).GetProperty("UTF8")!.GetGetMethod()
+            ))); // returns Encoding
             ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0)); // load encoded base64 string
             ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
                 typeof(Convert).GetMethod("FromBase64String", new[] { typeof(string) })
             ))); // returns byte[]
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
-                typeof(System.Text.Encoding).GetProperty("UTF8").GetGetMethod()
-            ))); // returns Encoding
             ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(
                 typeof(System.Text.Encoding).GetMethod("GetString", new[] { typeof(byte[]) })
             ))); // returns string
