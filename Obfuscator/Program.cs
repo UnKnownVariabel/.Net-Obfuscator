@@ -88,6 +88,7 @@ namespace Obfuscator {
                             Console.WriteLine("--antidebugging: Add anti-debugging code");
                             Console.WriteLine("--input <assembly>: Specify input assembly");
                             Console.WriteLine("--suffix <suffix>: Specify suffix for output assembly");
+                            Console.WriteLine("--all: Enable all options");
                             Console.WriteLine("--help: Show this help message");
                             return;
                         default:
@@ -168,6 +169,9 @@ namespace Obfuscator {
             }
             else if (GlobalSettings.shuffel) {
                 Console.WriteLine("can't shuffle without flattening");
+                Console.WriteLine("Will automatically flatten");
+                GlobalSettings.flattenCode = true;
+                CodeFlattening.FlattenModule(assembly.MainModule, GlobalSettings.shuffel);
             }
             if (GlobalSettings.antiDebugging)
             {
