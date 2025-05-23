@@ -25,27 +25,11 @@ namespace Obfuscator.Anti
             }
         }
 
-        public static void AddAntiDebug(MethodDefinition method)
+        private static void AddAntiDebug(MethodDefinition method)
         {
             var ilProcessor = method.Body.GetILProcessor();
             var instructions = method.Body.Instructions;
             var instruction = instructions[0];
-            // var kernel32ref = new ModuleReference("kernel32.dll");
-            // method.Module.ModuleReferences.Add(kernel32ref);
-
-            // var isDebuggerPresent = new MethodDefinition(
-            // "IsDebuggerPresent",
-            // MethodAttributes.Static | MethodAttributes.PInvokeImpl | MethodAttributes.Public,
-            // method.Module.TypeSystem.Boolean)
-            // {
-            //     HasThis = false,
-            //     // CallingConvention = MethodCallingConvention.StdCall,
-            //     IsPInvokeImpl = true,
-            // };
-            // isDebuggerPresent.PInvokeInfo = new PInvokeInfo(PInvokeAttributes.CharSetAnsi, "IsDebuggerPresent", kernel32ref);
-            // isDebuggerPresent.Parameters.Clear();
-            // method.Module.Types[0].Methods.Add(isDebuggerPresent);
-            // method.Module.ImportReference(isDebuggerPresent);
 
             var skipLabel = ilProcessor.Create(OpCodes.Nop);
         

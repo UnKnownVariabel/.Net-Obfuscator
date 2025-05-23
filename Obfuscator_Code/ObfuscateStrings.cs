@@ -75,7 +75,7 @@ public static class ObfuscateStrings
             ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
 
 
-            // Add the method to the module
+            // Add the method to the first type in the module
             module.Types.First().Methods.Add(decodeMethod);
 
             return decodeMethod;
