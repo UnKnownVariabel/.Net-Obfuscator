@@ -1,6 +1,6 @@
 ## run program
 **To run**\
-dotnet run -- <arguments>\
+dotnet run -- \<arguments\> \
 **To build a framework dependent executable**\
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true\
 **To build an executable that includes the .NET runtime**\
