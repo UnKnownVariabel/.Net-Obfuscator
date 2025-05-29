@@ -3,6 +3,9 @@ bin/
 obj/
 out/
 
+# Testing artifacts
+test/
+
 # User-specific files
 *.user
 *.suo

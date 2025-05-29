@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "obfuscator", "obfuscator.csproj", "{5F34C280-F29A-CF67-D7D6-34F1E9D9A079}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetShade", "NetShade.csproj", "{5F34C280-F29A-CF67-D7D6-34F1E9D9A079}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,6 +1,5 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Obfuscator.Anti;
 
 public static class GlobalSettings
 {
@@ -21,7 +20,7 @@ namespace Obfuscator {
             string suffix = string.Empty;
             if (args.Length < 1)
             {
-                Console.WriteLine("Usage: sudo dotnet run <flags> <inputAssembly>");
+                Console.WriteLine("Usage: sudo dotnet run <flags> <inputAssembly>. Use --help for more information.");
                 return;
             }
 
