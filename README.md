@@ -2,7 +2,9 @@
 dotnet run <path/to/name.dll>
 
 
-# TODO
-
-## Mixed Boolean-Arithmetic obfuscation
-## Anti-debugging
+## Features
+Supports
+- Control flow obfuscation
+- Renaming
+- Anti-debugging
+- String obfuscation
