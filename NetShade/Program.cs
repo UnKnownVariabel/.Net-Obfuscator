@@ -141,7 +141,8 @@ namespace Obfuscator {
             assembly.Name.Name = Path.GetFileNameWithoutExtension(outputAssemblyPath);
             assembly.MainModule.Name = Path.GetFileName(outputAssemblyPath);
 
-
+            // Adds unnecessary NOP instructions to methods
+            // Does not really do anything useful
             foreach (var module in assembly.Modules)
             {
                 foreach (var type in module.Types)
@@ -158,28 +159,26 @@ namespace Obfuscator {
                     }
                 }
             }
+
             if (GlobalSettings.obfuscateStrings)
             {
-                // Add the decode method to the module
                 ObfuscateStrings.ObfuscateStringModule(assembly.MainModule);
             }
             if (GlobalSettings.flattenCode) {
                 CodeFlattening.FlattenModule(assembly.MainModule, GlobalSettings.shuffel);
             }
             else if (GlobalSettings.shuffel) {
-                Console.WriteLine("can't shuffle without flattening");
+                Console.WriteLine("Can't shuffle without flattening");
                 Console.WriteLine("Will automatically flatten");
                 GlobalSettings.flattenCode = true;
                 CodeFlattening.FlattenModule(assembly.MainModule, GlobalSettings.shuffel);
             }
             if (GlobalSettings.antiDebugging)
             {
-                // Add anti-debugging code
                 AntiDebugging.AntiDebugModule(assembly.MainModule);
             }
             if (GlobalSettings.rename)
             {
-                // Rename types and methods
                 Rename.RenameModule(assembly.MainModule);
             }
 
@@ -188,6 +187,4 @@ namespace Obfuscator {
         }
 
     }
-// See https://aka.ms/new-console-template for more information
-// Console.WriteLine("Hello, World!");
 }

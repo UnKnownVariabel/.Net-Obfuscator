@@ -37,47 +37,53 @@ public static class ObfuscateStrings
             }
         }
     }
+
+    // Get or create the decode method that decodes base64 strings
+    // Ensures that we only have one decode method in the module
     private static MethodDefinition GetOrCreateDecodeMethod(ModuleDefinition module)
-        {
-            // Check if the decode method already exists
-            var existingMethod = module.Types
-                .SelectMany(t => t.Methods)
-                .FirstOrDefault(m => m.Name == "DecodeString");
+    {
+        // Check if the decode method already exists
+        var existingMethod = module.Types
+            .SelectMany(t => t.Methods)
+            .FirstOrDefault(m => m.Name == "DecodeString");
 
-            if (existingMethod != null)
-                return existingMethod;
+        if (existingMethod != null)
+            return existingMethod;
 
-            // Create a new decode method
-            var decodeMethod = new MethodDefinition(
-                "DecodeString",
-                MethodAttributes.Public | MethodAttributes.Static,
-                module.ImportReference(typeof(string))
-            );
+        // Create a new decode method
+        var decodeMethod = new MethodDefinition(
+            "DecodeString",
+            MethodAttributes.Public | MethodAttributes.Static,
+            module.ImportReference(typeof(string))
+        );
 
-            var stringType = module.ImportReference(typeof(string));
-            var byteArrayType = module.ImportReference(typeof(byte[]));
-            var encodingType = module.ImportReference(typeof(System.Text.Encoding));
+        var stringType = module.ImportReference(typeof(string));
+        var byteArrayType = module.ImportReference(typeof(byte[]));
+        var encodingType = module.ImportReference(typeof(System.Text.Encoding));
 
-            decodeMethod.Parameters.Add(new ParameterDefinition("encodedString", ParameterAttributes.None, stringType));
+        decodeMethod.Parameters.Add(new ParameterDefinition("encodedString", ParameterAttributes.None, stringType));
 
-            var ilProcessor = decodeMethod.Body.GetILProcessor();
-            
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
-                typeof(System.Text.Encoding).GetProperty("UTF8")!.GetGetMethod()
-            ))); // returns Encoding
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0)); // load encoded base64 string
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
-                typeof(Convert).GetMethod("FromBase64String", new[] { typeof(string) })
-            ))); // returns byte[]
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(
-                typeof(System.Text.Encoding).GetMethod("GetString", new[] { typeof(byte[]) })
-            ))); // returns string
-            ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
+        // Adds the method body to decode a base64 encoded string
+        var ilProcessor = decodeMethod.Body.GetILProcessor();
 
+        // Load the utf8 property for GetString
+        ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
+            typeof(System.Text.Encoding).GetProperty("UTF8")!.GetGetMethod()
+        ))); 
+        // Load the encoded string argument and call Convert.FromBase64String
+        ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
+        ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(
+            typeof(Convert).GetMethod("FromBase64String", new[] { typeof(string) })
+        ))); 
+        // Convert the byte array to a string using UTF8 encoding
+        ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, module.ImportReference(
+            typeof(System.Text.Encoding).GetMethod("GetString", new[] { typeof(byte[]) })
+        ))); 
+        ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
 
-            // Add the method to the first type in the module
-            module.Types.First().Methods.Add(decodeMethod);
+        // Add the method to the first type in the module
+        module.Types.First().Methods.Add(decodeMethod);
 
-            return decodeMethod;
-        }
+        return decodeMethod;
+    }
 }

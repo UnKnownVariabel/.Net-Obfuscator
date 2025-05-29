@@ -5,9 +5,9 @@ public static class Rename
 {
     public static void RenameModule(ModuleDefinition module)
     {
-        // Generate a random name for the module
         foreach (var type in module.Types)
         {
+            // Generate a random name for the class
             type.Name = "Obf_" + Guid.NewGuid().ToString();
             foreach (var method in type.Methods)
             {

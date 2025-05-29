@@ -11,6 +11,7 @@ public static class AntiDebugging
 
     public static void AntiDebugModule(ModuleDefinition module)
     {
+        // Import the necessary methods for anti-debugging and exit functionality
         _exitMethod = module.ImportReference(typeof(Environment).GetMethod("Exit", new[] { typeof(int) }));
         _isDebuggerAttachedMethod = module.ImportReference(
             typeof(System.Diagnostics.Debugger).GetProperty("IsAttached")!.GetGetMethod());
@@ -32,7 +33,6 @@ public static class AntiDebugging
 
         var skipLabel = ilProcessor.Create(OpCodes.Nop);
 
-        // ilProcessor.InsertBefore(instruction, Instruction.Create(OpCodes.Call, isDebuggerPresent));
         ilProcessor.InsertBefore(instruction, Instruction.Create(OpCodes.Call, _isDebuggerAttachedMethod)); // Check if debugger is attached
         ilProcessor.InsertBefore(instruction, Instruction.Create(OpCodes.Brfalse_S, skipLabel));  // Skip if no debugger
         ilProcessor.InsertBefore(instruction, Instruction.Create(OpCodes.Ldc_I4_0)); // Argument for Exit (exit code)
